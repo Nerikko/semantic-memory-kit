@@ -7,6 +7,8 @@
 Lightweight semantic search over your AI agent's memory files. No vector database. No API calls. Runs on CPU in ~85ms per query.
 
 > **Packaged version available:** Pre-bundled zip with extended examples and an agent integration demo — [download on Gumroad](https://sagnelli.gumroad.com/l/rplxp) (€29).
+>
+> **Main site:** https://datis-agent.com
 
 ## The Problem
 
