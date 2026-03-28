@@ -4,11 +4,28 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
 [![Model](https://img.shields.io/badge/model-all--MiniLM--L6--v2-green)](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
 
-Lightweight semantic search over your AI agent's memory files. No vector database. No API calls. Runs on CPU in ~85ms per query.
+Lightweight semantic search over your AI agent's memory files. No vector database. No API calls. Runs on CPU.
 
-> **Packaged version available:** Pre-bundled zip with extended examples and an agent integration demo — [download on Gumroad](https://sagnelli.gumroad.com/l/rplxp) (€29).
+> **Packaged Pro version available:** [download on Gumroad](https://sagnelli.gumroad.com/l/rplxp) (€29).
 >
 > **Main site:** https://datis-agent.com
+
+## Free vs Pro
+
+This repository is the **free core** version:
+- `semantic_memory.py` library
+- Base README + one basic example
+- Local semantic retrieval with no vector DB
+
+The Gumroad **Pro pack** includes everything above, plus:
+- 3 ready-to-use integrations (Anthropic, OpenAI, Ollama)
+- Reindex-on-change script
+- Memory dedupe script
+- Agent starter template
+- Prompt recipes + troubleshooting guide
+
+If you just want to learn or build a minimal setup, this free repo is enough.
+If you want to implement faster in real agents with less trial-and-error, use Pro.
 
 ## The Problem
 
@@ -19,7 +36,7 @@ Most AI agents treat memory as a file you append to and eventually load into con
 
 ## The Solution
 
-Encode your memory files as local embeddings. Search by meaning, not keywords. Return only the relevant chunks.
+Embed your memory files locally using `all-MiniLM-L6-v2` (22MB, runs on CPU). At query time, encode the query and retrieve the most relevant chunks by cosine similarity. Understands meaning — "remote access" matches "VPN tunneling" without shared keywords.
 
 ```python
 from semantic_memory import SemanticMemory
@@ -69,7 +86,6 @@ for r in results:
 ```python
 context = mem.query_and_format("current project priorities", top_k=4)
 
-# Inject directly into your model's system prompt:
 response = client.messages.create(
     model="claude-haiku-4-5",
     system=f"You are an assistant.\n\nMemory:\n{context}",
@@ -100,10 +116,7 @@ def chat(message):
 ### CLI
 
 ```bash
-# Build index
 python semantic_memory.py ~/.agent/memory --index
-
-# Query
 python semantic_memory.py ~/.agent/memory "what is the status of the API project?"
 ```
 
@@ -119,7 +132,7 @@ Memory files (.md / .txt / .json)
         │
         ▼
   ┌───────────┐
-  │  Encoder  │  all-MiniLM-L6-v2 (22MB, CPU, ~85ms/query)
+  │  Encoder  │  all-MiniLM-L6-v2 (22MB, CPU-only)
   └─────┬─────┘
         │
         ▼
@@ -135,15 +148,17 @@ Memory files (.md / .txt / .json)
   Inject into model context
 ```
 
-## Performance
+## Benchmark
 
-| Operation | Time (M1 MacBook Air, 205 chunks) |
-|-----------|----------------------------------|
-| First index build | ~3.2 seconds |
-| Index load from cache | ~0.4 seconds |
-| Query (encode + similarity) | ~85ms |
-| Index file size | ~1.4MB |
-| Model download (one-time) | 22MB |
+Measured on MacBook Air M4, CPU-only, no GPU:
+
+| Operation | Result |
+|-----------|--------|
+| Index build (2,000 chunks) | 13.2s |
+| Avg query time | 42ms |
+| Min query time | 8ms |
+| Index cache load | ~0.4s |
+| Model size | 22MB |
 | RAM while loaded | ~180MB |
 
 ## When to Use This vs a Vector Database
